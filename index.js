@@ -2,9 +2,20 @@ const inquirer = require('inquirer')
 const mysql = require('mysql2')
 const console_table = require('console.table')
 
+const db = mysql.createConnection(
+{
+    host: 'localhost',
+    user:'root',
+    password: "Imthenextgen$15",
+    port: 3306,
+    database: "workforce_db"
+}
+)
+
+
 
 function init() {
-    inquirer.prompt([{
+  inquirer.prompt([{
         type: 'list',
         name: 'managerChoice',
         message: "What would you like to do?",
@@ -34,20 +45,21 @@ function init() {
                 break;
             case "Quit":
                 return;
-
         }
-
-
-
     })
 }
 
 function viewEmployee(){
-    console.log('View all Employee');
+    db.query('Select * FROM employee', function (err, results) {
+        console.table(results)
+    })
+    init()
+  
 }
 
 function addEmployee() {
     console.log("Added an Employee")
+
 }
 
 function updateEmployee() {
@@ -55,7 +67,10 @@ function updateEmployee() {
 }
 
 function viewRoles() {
-    console.log('view all roles')
+    db.query('Select * FROM roles', function (err, results) {
+        console.table(results)
+    })
+   init()
 }
 
 function addRole() {
@@ -63,11 +78,26 @@ function addRole() {
 }
 
 function viewDepartments(){
-    console.log('View all Departments')
+  db.query('Select * FROM department', function (err, results) {
+        return console.table(results);
+    })
+  init()
 }
 
-function addDep(){
-    console.log('Add Department')
+async function addDep(){
+    await inquirer.prompt([{
+       type:"input",
+       name: "newDept",
+       message: "What is the name of the new department?" 
+    }]).then(function(data) {
+        var newDepts = "INSERT INTO department(name) VALUES(" + '"'+ data.newDept + '"' + ")"
+        console.log(newDepts)
+        db.query(newDepts, function(err, results) {
+            if(err) throw err;
+        })
+
+    })
+     init()
 }
 
 init()
