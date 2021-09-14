@@ -14,7 +14,7 @@ const db = mysql.createConnection(
 {
     host: 'localhost',
     user:'root',
-    password: "Imthenextgen$15",
+    password: "",
     port: 3306,
     database: "workforce_db"
 }
@@ -143,11 +143,9 @@ function addEmployee() {
 
         db.query(newemployeeData, function(err, results) {
             if(err) throw err;
-            init()
+            
         })
-        
-        console.log(newemployeeData)
-
+   init() 
 }) 
 })
 })
@@ -181,14 +179,14 @@ function updateEmployee() {
         var updateEmployee = "UPDATE employee SET role_id = " + idhelper(rolesValues, data.updateRole)  +  " WHERE id = " + idhelper(employeeValues, data.updateEmployee)
             db.query(updateEmployee, function(err, results) {
             if(err) throw err;
-            init()
+            
         })
         
     })
     
 
     })
-
+    init()
 })
      
 }
