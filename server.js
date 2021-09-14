@@ -7,7 +7,7 @@ var roles = []
 var managersValues = []
 var managers = []
 var employeeValues = []
-var employees = []
+var employee = []
 
 
 const db = mysql.createConnection(
@@ -21,8 +21,15 @@ const db = mysql.createConnection(
 )
 
 function idhelper(array, choice) {
+
     for(var i = 0; i < array.length; i++){
     if(array[i].name === choice){
+        return array[i].id
+    } else if (array[i].managerName === choice){
+        return array[i].id
+    } else if (array[i].title === choice){
+        return array[i].id
+    } else if (array[i].first_name === choice){
         return array[i].id
     }
 }
@@ -45,7 +52,7 @@ function managerHelper(array) {
 
 function employeeHelper(array) {
     for(let i = 0; i < array.length; i++){
-       managers.push(array[i].managerName);
+       employee.push(array[i].first_name);
 }}
 
 function init() {
@@ -132,22 +139,58 @@ function addEmployee() {
     }
 
 ]).then(function(data){
-    var newemployeeData = "INSERT INTO department(first_name, last_name, role_id, manager_id) VALUES(" + '"'+ data.employeeFirstName + '", ' + data.employeeLastName + ', "' + idhelper(roles, data.employeeRoleAdd) + '"' + '"' + idhelper(managers, data.employeeManager) + '"' + ")"
-    console.log(newemployeeData)
+    var newemployeeData = "INSERT INTO employee(first_name, last_name, role_id, manager_id) VALUES(" + '"'+ data.employeeFirstName + '","' + data.employeeLastName + '",' + idhelper(rolesValues, data.employeeRoleAdd) + ','  + idhelper(managersValues, data.employeeManager)  + ")"
+
+        db.query(newemployeeData, function(err, results) {
+            if(err) throw err;
+            init()
+        })
+        
+        console.log(newemployeeData)
 
 }) 
-
-
-    })
-   
-   
-    })
-
-
+})
+})
 }
 
 function updateEmployee() {
-    console.log("updated Employee Role")
+    var employeeQuery = db.query("SELECT * FROM workforce_db.employee", function(err, results) {
+      
+     results.forEach((element, index) => employeeValues.push(element))
+
+     employeeHelper(employeeValues)
+
+         var roleQuery = db.query("SELECT * FROM workforce_db.roles", function(err, results) {
+        results.forEach((element, index) => rolesValues.push(element));
+        
+        rolesHelper(rolesValues)
+
+        inquirer.prompt([{
+            type: "list",
+            name: "updateEmployee",
+            message: "Wich employee's role do you want to update?",
+            choices: employee
+        }, 
+        {
+            type: "list",
+            name: "updateRole",
+            message: "Which role do you want to assign to the selected employee?",
+            choices: roles
+        },
+    ]).then(function(data){
+        var updateEmployee = "UPDATE employee SET role_id = " + idhelper(rolesValues, data.updateRole)  +  " WHERE id = " + idhelper(employeeValues, data.updateEmployee)
+            db.query(updateEmployee, function(err, results) {
+            if(err) throw err;
+            init()
+        })
+        
+    })
+    
+
+    })
+
+})
+     
 }
 
 function viewRoles() {
@@ -163,8 +206,8 @@ async function addRole() {
     var departmentsQuery = db.query("SELECT * FROM workforce_db.department", function(err, results) {
       
      results.forEach((element, index) => departments.push(element))
-     console.log(departments)
-     
+    
+
     inquirer.prompt([{
         type: "input",
         name:"roleNameAdd",
@@ -184,10 +227,16 @@ async function addRole() {
 
 
 ]).then(function(data){
-    var newroleData = "INSERT INTO department(name, title, salary, department) VALUES(" + '"'+ data.roleNameAdd + '", ' + data.RoleSalaryAdd + ', "' + idhelper(departments, data.roledeptAdd) + '"' +")"
-    console.log(newroleData)
+    var newroleData = "INSERT INTO roles(title, salary, department_id) VALUES(" + '"'+ data.roleNameAdd + '", ' + data.RoleSalaryAdd + ', ' + idhelper(departments, data.roledeptAdd) +")"
+    db.query(newroleData, function(err, results) {
+            if(err) throw err;
+        })
+    init()
+    
 
-})})
+}) 
+ 
+})
        
 }
 
@@ -211,9 +260,9 @@ async function addDep(){
         db.query(newDepts, function(err, results) {
             if(err) throw err;
         })
-
+    init()
     })
-     init()
+     
 }
 
 init();
