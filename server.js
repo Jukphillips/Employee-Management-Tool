@@ -14,7 +14,7 @@ const db = mysql.createConnection(
 {
     host: 'localhost',
     user:'root',
-    password: "",
+    password: "Imthenextgen$15",
     port: 3306,
     database: "workforce_db"
 }
@@ -46,14 +46,25 @@ function rolesHelper(array) {
 }
 
 function managerHelper(array) {
+    if(array.length > 0){
     for(let i = 0; i < array.length; i++){
        managers.push(array[i].managerName);
-}}
+    }} else {
+        managers.push(null);
+    }
+}
 
 function employeeHelper(array) {
+    employee = []
+    console.log(array.length)
     for(let i = 0; i < array.length; i++){
        employee.push(array[i].first_name);
-}}
+} }
+
+function departmentsQuery() { 
+   db.query("SELECT * FROM workforce_db.department", function(err, results) {
+     results.forEach((element, index) => departments.push(element))
+    })}
 
 function init() {
   inquirer.prompt([{
@@ -87,11 +98,13 @@ function init() {
             case "Quit":
                 return;
         }
+    }).catch (err = () => {
+        console.log(err)
     })
 }
 
 function viewEmployee(){
-    db.query('Select * FROM employee', function (err, results) {
+    db.query('Select employee.id, employee.first_name, employee.last_name, roles.title, roles.salary, department.name, manager.managerName FROM employee INNER JOIN roles ON employee.role_id = roles.id  INNER JOIN department ON roles.department_id = department.id LEFT JOIN manager ON employee.manager_id = manager.id', function (err, results) {
         console.table(results)
         init()
     })
@@ -101,17 +114,22 @@ function viewEmployee(){
 
 function addEmployee() {
     
-    var managerQuery = db.query("SELECT * FROM workforce_db.manager", function(err, results) {
+    function managerQuery () { db.query("SELECT * FROM workforce_db.manager", function(err, results) {
       
      results.forEach((element, index) => managersValues.push(element))
 
      managerHelper(managersValues)
+    })}
      
-    var roleQuery = db.query("SELECT * FROM workforce_db.roles", function(err, results) {
+    function roleQuery () { db.query("SELECT * FROM workforce_db.roles", function(err, results) {
         results.forEach((element, index) => rolesValues.push(element));
         
         rolesHelper(rolesValues)
         
+    })}
+
+    managerQuery()
+    roleQuery()
 
 
              
@@ -139,30 +157,35 @@ function addEmployee() {
     }
 
 ]).then(function(data){
-    var newemployeeData = "INSERT INTO employee(first_name, last_name, role_id, manager_id) VALUES(" + '"'+ data.employeeFirstName + '","' + data.employeeLastName + '",' + idhelper(rolesValues, data.employeeRoleAdd) + ','  + idhelper(managersValues, data.employeeManager)  + ")"
-
+    var newemployeeData = "INSERT INTO employee(first_name, last_name, role_id, manager_id) VALUES(" + '"'+ data.employeeFirstName + '","' + data.employeeLastName + '",' + idhelper(rolesValues, data.employeeRoleAdd) + ','  + idhelper(managersValues, data.employeeManager) + ")"
+    console.log(newemployeeData)
         db.query(newemployeeData, function(err, results) {
             if(err) throw err;
-            
+            init()
         })
-   init() 
+    
 }) 
-})
-})
+
 }
 
 function updateEmployee() {
-    var employeeQuery = db.query("SELECT * FROM workforce_db.employee", function(err, results) {
+    function employeeQuery () { db.query("SELECT * FROM workforce_db.employee", function(err, results) {
+    
       
      results.forEach((element, index) => employeeValues.push(element))
 
-     employeeHelper(employeeValues)
+     employeeHelper(employeeValues) })
+ 
 
-         var roleQuery = db.query("SELECT * FROM workforce_db.roles", function(err, results) {
+    function roleQuery () { db.query("SELECT * FROM workforce_db.roles", function(err, results) {
         results.forEach((element, index) => rolesValues.push(element));
         
-        rolesHelper(rolesValues)
+        rolesHelper(rolesValues) })}
 
+        employeeQuery()
+        roleQuery()
+
+    
         inquirer.prompt([{
             type: "list",
             name: "updateEmployee",
@@ -179,20 +202,22 @@ function updateEmployee() {
         var updateEmployee = "UPDATE employee SET role_id = " + idhelper(rolesValues, data.updateRole)  +  " WHERE id = " + idhelper(employeeValues, data.updateEmployee)
             db.query(updateEmployee, function(err, results) {
             if(err) throw err;
+            init()
+     
             
         })
         
     })
     
 
-    })
-    init()
-})
-     
+
+
+}
 }
 
+
 function viewRoles() {
-    db.query('Select * FROM roles', function (err, results) {
+    db.query('Select roles.id, roles.title, roles.salary, department.name FROM department INNER JOIN roles ON roles.department_id = department.id', function (err, results) {
         console.table(results)
         init()
     })
@@ -200,10 +225,7 @@ function viewRoles() {
 }
 
 async function addRole() {
-
-    var departmentsQuery = db.query("SELECT * FROM workforce_db.department", function(err, results) {
-      
-     results.forEach((element, index) => departments.push(element))
+   departmentsQuery()
     
 
     inquirer.prompt([{
@@ -228,13 +250,12 @@ async function addRole() {
     var newroleData = "INSERT INTO roles(title, salary, department_id) VALUES(" + '"'+ data.roleNameAdd + '", ' + data.RoleSalaryAdd + ', ' + idhelper(departments, data.roledeptAdd) +")"
     db.query(newroleData, function(err, results) {
             if(err) throw err;
+            init()
         })
-    init()
+   
     
 
 }) 
- 
-})
        
 }
 
@@ -257,10 +278,11 @@ async function addDep(){
         console.log(newDepts)
         db.query(newDepts, function(err, results) {
             if(err) throw err;
+            init()
         })
-    init()
+    
     })
      
 }
 
-init();
+init()
