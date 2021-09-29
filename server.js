@@ -14,7 +14,7 @@ const db = mysql.createConnection(
 {
     host: 'localhost',
     user:'root',
-    password: "Imthenextgen$15",
+    password: "",
     port: 3306,
     database: "workforce_db"
 }
@@ -55,11 +55,13 @@ function managerHelper(array) {
 }
 
 function employeeHelper(array) {
-    employee = []
-    console.log(array.length)
+    
     for(let i = 0; i < array.length; i++){
-       employee.push(array[i].first_name);
+        
+        employee.push(array[i].first_name);
 } }
+
+       
 
 function departmentsQuery() { 
    db.query("SELECT * FROM workforce_db.department", function(err, results) {
@@ -168,24 +170,18 @@ function addEmployee() {
 
 }
 
-function updateEmployee() {
-    function employeeQuery () { db.query("SELECT * FROM workforce_db.employee", function(err, results) {
+async function updateEmployee() {
+const employeeQuery = db.query("SELECT * FROM workforce_db.employee", function(err, results) {
     
-      
-     results.forEach((element, index) => employeeValues.push(element))
-
-     employeeHelper(employeeValues) })
- 
-
-    function roleQuery () { db.query("SELECT * FROM workforce_db.roles", function(err, results) {
+ results.forEach((element, index) => employeeValues.push(element))
+       
+    employeeHelper(employeeValues)  
+    const roleQuery = db.query("SELECT * FROM workforce_db.roles", function(err, results) {
         results.forEach((element, index) => rolesValues.push(element));
         
-        rolesHelper(rolesValues) })}
+        rolesHelper(rolesValues) 
 
-        employeeQuery()
-        roleQuery()
 
-    
         inquirer.prompt([{
             type: "list",
             name: "updateEmployee",
@@ -208,12 +204,10 @@ function updateEmployee() {
         })
         
     })
-    
 
 
+    })})}
 
-}
-}
 
 
 function viewRoles() {
