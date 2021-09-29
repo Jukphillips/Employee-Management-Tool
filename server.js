@@ -14,7 +14,7 @@ const db = mysql.createConnection(
 {
     host: 'localhost',
     user:'root',
-    password: "",
+    password: "", 
     port: 3306,
     database: "workforce_db"
 }
@@ -98,7 +98,7 @@ function init() {
                 addDep();
                 break;
             case "Quit":
-                return;
+                return process.exit(0);
         }
     }).catch (err = () => {
         console.log(err)
@@ -197,7 +197,7 @@ const employeeQuery = db.query("SELECT * FROM workforce_db.employee", function(e
     ]).then(function(data){
         var updateEmployee = "UPDATE employee SET role_id = " + idhelper(rolesValues, data.updateRole)  +  " WHERE id = " + idhelper(employeeValues, data.updateEmployee)
             db.query(updateEmployee, function(err, results) {
-            if(err) throw err;
+            if(err) { throw err;}
             init()
      
             
